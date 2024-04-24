@@ -27,7 +27,6 @@ public class Quiz {
     @Column(name = "description", nullable = false)
     private String description;
 
-    @JsonManagedReference
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "id_quiz")
     private List<Question> questions;

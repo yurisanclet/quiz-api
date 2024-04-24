@@ -40,6 +40,19 @@ public class UserService implements IUserService {
                 .toList();
     }
 
+    public void patchUser(Long id, User user) {
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+
+        if (user.getLogin() != null) {
+            existingUser.setLogin(user.getLogin());
+        }
+        if (user.getPassword() != null) {
+            existingUser.setPassword(user.getPassword());
+        }
+        userRepository.save(existingUser);
+    }
+
     public UserResponseDTO getUserById(Long id) {
         if (Objects.isNull(id) || id <= 0) {
             throw new IllegalArgumentException("ID inválido");

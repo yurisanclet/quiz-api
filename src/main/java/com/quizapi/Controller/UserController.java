@@ -46,6 +46,16 @@ public class UserController {
         return ResponseEntity.ok("Usuario atualizado com sucesso!");
     }
 
+    @PatchMapping("/{id}")
+    public ResponseEntity<String> patchUser(@PathVariable Long id, @RequestBody User user) {
+        try {
+            userService.patchUser(id, user);
+            return ResponseEntity.ok("Usuário atualizado com sucesso!");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);

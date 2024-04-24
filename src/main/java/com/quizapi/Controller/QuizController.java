@@ -1,5 +1,6 @@
 package com.quizapi.Controller;
 
+import com.quizapi.Domain.DTO.AnswerDTO.AnswerDTO;
 import com.quizapi.Domain.DTO.QuizDTO.QuizResponseDTO;
 import com.quizapi.Domain.DTO.QuizDTO.QuizUpdateDTO;
 import com.quizapi.Domain.Entity.Answer;
@@ -55,12 +56,22 @@ public class QuizController {
         return ResponseEntity.ok(patchedQuiz);
     }
 
-    @PostMapping("/quiz/{quizId}/answer")
+
+    @GetMapping("/{quizId}/answers")
+    public ResponseEntity<List<AnswerDTO>> getAllAnswersFromQuiz(@PathVariable Long quizId) {
+        List<AnswerDTO> answers = quizService.getAllAnswersFromQuiz(quizId);
+        return ResponseEntity.ok(answers);
+    }
+
+    @PostMapping("/{quizId}/answer")
     public ResponseEntity<Quiz> addAnswerToQuiz(@PathVariable Long quizId, @RequestBody Answer answer) {
         Quiz quiz = quizService.getQuizById(quizId);
-        for (Question question : quiz.getQuestions()) {
-            quizService.addAnswerToQuestion(question.getId(), answer);
-        }
+        Question question = quiz.getQuestions().stream()
+                .filter(q -> q.getId().equals(answer.getQuestionId().getId()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Question not found"));
+
+        quizService.addAnswerToQuestion(question.getId(), answer);
         return ResponseEntity.ok(quiz);
     }
 

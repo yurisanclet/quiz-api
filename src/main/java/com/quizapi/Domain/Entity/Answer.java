@@ -1,6 +1,8 @@
 package com.quizapi.Domain.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -17,9 +19,9 @@ public class Answer {
     private Long id;
 
     @Column(name = "description", nullable = false)
-    private String description;
+    private String answerDescription;
 
     @OneToOne
     @JoinColumn(name = "id_question")
-    private Question question;
+    private Question questionId;
 }

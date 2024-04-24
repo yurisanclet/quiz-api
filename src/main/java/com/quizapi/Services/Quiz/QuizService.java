@@ -1,20 +1,19 @@
 package com.quizapi.Services.Quiz;
 
+import com.quizapi.Domain.DTO.AnswerDTO.AnswerDTO;
 import com.quizapi.Domain.DTO.QuizDTO.QuizResponseDTO;
 import com.quizapi.Domain.DTO.QuizDTO.QuizUpdateDTO;
-import com.quizapi.Domain.DTO.UserDTO.UserResponseDTO;
 import com.quizapi.Domain.Entity.Answer;
 import com.quizapi.Domain.Entity.Question;
 import com.quizapi.Domain.Entity.Quiz;
-import com.quizapi.Domain.Entity.User;
 import com.quizapi.Repository.AnswerRepository;
 import com.quizapi.Repository.QuestionRepository;
 import com.quizapi.Repository.QuizRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class QuizService {
@@ -30,21 +29,13 @@ public class QuizService {
     }
 
     public Quiz createQuiz(Quiz quiz) {
-        if (Objects.isNull(quiz) || Objects.isNull(quiz.getName()) || Objects.isNull(quiz.getDescription())) {
-            throw new IllegalArgumentException("Quiz inválido");
+        // Passo 1: Salve o quiz no repositório de quiz
+        Quiz savedQuiz = quizRepository.save(quiz);
+        for(Question question : quiz.getQuestions()){
+            question.setQuiz(savedQuiz);
+            questionRepository.save(question);
         }
-        if (quiz.getQuestions() != null) {
-            quiz.getQuestions().forEach(question -> {
-                if (Objects.isNull(question.getDescription())) {
-                    throw new IllegalArgumentException("Pergunta inválida");
-                }
-                question.setQuiz(quiz);
-                if (question.getAnswer() != null) {
-                    throw new IllegalArgumentException("Não é permitido criar respostas neste momento");
-                }
-            });
-        }
-        return quizRepository.save(quiz);
+        return savedQuiz;
     }
 
     public List<QuizResponseDTO> getAllQuizzes() {
@@ -90,13 +81,28 @@ public class QuizService {
         return quizRepository.save(quizToUpdate);
     }
 
-    public Question addAnswerToQuestion(Long questionId, Answer answer) {
+    public void addAnswerToQuestion(Long questionId, Answer answer) {
         Question question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new IllegalArgumentException("Questão não encontrada"));
 
-        answer.setQuestion(question);
+        answer.setQuestionId(question);
         answerRepository.save(answer);
-        return question;
+    }
+
+    public List<AnswerDTO> getAllAnswersFromQuiz(Long quizId) {
+        Quiz quiz = getQuizById(quizId);
+        return quiz.getQuestions().stream()
+                .map(Question::getAnswer)
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    private AnswerDTO toDTO(Answer answer) {
+        return new AnswerDTO(
+                answer.getId(),
+                answer.getAnswerDescription(),
+                answer.getQuestionId().getId()
+        );
     }
 
     public void deleteQuiz(Long id) {

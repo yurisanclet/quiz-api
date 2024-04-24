@@ -22,11 +22,10 @@ public class Question {
     private String description;
 
     @ManyToOne
-    @JsonBackReference
     @JoinColumn(name = "id_quiz")
     @JsonIgnore
     private Quiz Quiz;
 
-    @OneToOne(mappedBy = "question", cascade = CascadeType.ALL, optional = true)
+    @OneToOne(mappedBy = "questionId", cascade = CascadeType.ALL, optional = true)
     private Answer answer;
 }
